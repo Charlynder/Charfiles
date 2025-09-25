@@ -26,5 +26,4 @@ ZSH config on `Mac` & `Linux`: [/zsh/](/zsh/.zshrc)
 Use Starship with PowerShell on `Windows`: [powershell](/powershell/Microsoft.PowerShell_profile.ps1)
 
 Neovim config all systems: [/nvim/](/nvim/)
->>>>>>> 2dc083c (feat: ghostty theme update for Tahoe)
 
