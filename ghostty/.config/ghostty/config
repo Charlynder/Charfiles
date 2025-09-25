@@ -1,0 +1,52 @@
+# --- Liquid Glass Appearance ---
+font-family = "SF Mono"
+font-size = 14
+
+# Window appearance for liquid glass effect
+window-decoration = true
+background-opacity = 0.8
+background-blur-radius = 20
+macos-non-native-fullscreen = true
+# macOS titlebar style (valid: native, transparent, tabs, hidden)
+macos-titlebar-style = transparent
+
+# Colors - Custom dark theme with glass-like transparency
+background = 1a1a1a
+foreground = e0e0e0
+
+# Cursor styling
+cursor-style = block
+cursor-color = 60a5fa
+
+# Selection colors
+selection-background = 404040
+selection-foreground = ffffff
+
+# Terminal colors for liquid glass theme
+palette = 0=#1a1a1a
+palette = 1=#ff6b6b
+palette = 2=#4ecdc4
+palette = 3=#ffe66d
+palette = 4=#60a5fa
+palette = 5=#c678dd
+palette = 6=#56b6c2
+palette = 7=#e0e0e0
+palette = 8=#5c5c5c
+palette = 9=#ff8e8e
+palette = 10=#6ee7de
+palette = 11=#fff088
+palette = 12=#8cc8ff
+palette = 13=#d19ae6
+palette = 14=#7dd3fc
+palette = 15=#ffffff
+
+# Window padding for refined look
+window-padding-x = 20
+window-padding-y = 15
+
+# --- Shell ---
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+command = /bin/zsh --login
+
+
