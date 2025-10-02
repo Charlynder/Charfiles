@@ -13,11 +13,11 @@ ZSH_THEME="charlynderModel"
 zstyle ':omz:update' mode auto      # update automatically without asking
 
 # Plugins
-plugins=(git fzf-tab zsh-autosuggestions)
+plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
-# Source zsh-autosuggestions from Homebrew
+# Load zsh-autosuggestions
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # User configuration
@@ -38,8 +38,8 @@ else
   export EDITOR='mvim'
 fi
 
-# Set fzf key bindings and fuzzy completion
-source <(fzf --zsh)
+# Set fzf key bindings and fuzzy completion (disabled)
+# source <(fzf --zsh)
 
 # import Zoxide
 eval "$(zoxide init zsh)"

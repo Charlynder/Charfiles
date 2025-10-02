@@ -1,7 +1,17 @@
 # --- Appearance ---
-font-family = "InconsolataLGC Nerd Font Mono"
+font-family = "JetBrains Mono"
+font-size = 14
 
-# --- Colors ---
-theme = "carbonfox"
+# --- Character spacing ---
+adjust-cell-width = 0
+adjust-cell-height = 0
 
+# --- Terminal behavior ---
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
 
+# --- Theme ---
+theme = "Cursor Dark"
+background-blur = true
+background-blur-radius = 20
+background-opacity = 0.6

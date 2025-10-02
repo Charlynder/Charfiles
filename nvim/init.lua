@@ -1,3 +1,4 @@
+-- load line numbers as true
 vim.wo.number = true
 
 vim.api.nvim_create_user_command('E', 'Explore', {})
@@ -13,14 +14,22 @@ vim.keymap.set('n', '<leader>v', ':Vexplore<CR>')
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
--- Load pckr configuration
+-- load pckr configuration
 require('pckr-config')
 
--- Load treesitter configuration
+-- load treesitter configuration
 require('treesitter-config')
 
--- Load completion configuration (only if nvim-cmp is installed)
+-- load completion configuration (only if nvim-cmp is installed)
 local cmp_ok, _ = pcall(require, 'cmp')
 if cmp_ok then
-  require('completion-config')
+    require('completion-config')
 end
+
+-- load StatusLine to green (#4CC970)
+vim.cmd([[
+  highlight StatusLine guifg=#4CC970 guibg=#4CC970 ctermfg=white ctermbg=green
+  highlight StatusLineNC guifg=#888888 guibg=#3ba05a ctermfg=gray ctermbg=darkgreen
+]])
+vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
