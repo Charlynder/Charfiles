@@ -1,4 +1,7 @@
-function toon {
+# Charlynder Lite
+# very basic and lightwight zsh prompt does not change like the model prompt
+
+function apple {
   echo -n ""
 }
 
@@ -23,7 +26,7 @@ theme_precmd () {
 }
 
 # Set up the prompt with dynamic vcs_info
-PROMPT='$(toon) [%F{050}%n%f: %~] %{$reset_color%}${vcs_info_msg_0_}%{$reset_color%}» '
+PROMPT='$(apple) [%F{050}%n%f: %~] %{$reset_color%}${vcs_info_msg_0_}%{$reset_color%}» '
 ## RPROMPT="%*"
 
 # Add the precmd hook to update git info automatically
