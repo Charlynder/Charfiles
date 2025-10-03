@@ -10,15 +10,15 @@ export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="charlynderModel"
 
 # auto-update oh-my-zsh
-zstyle ':omz:update' mode auto      # update automatically without asking
+# zstyle ':omz:update' mode auto      # update automatically without asking
 
 # Plugins
-plugins=(git)
+plugins=(git zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 
 # Load zsh-autosuggestions
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+# source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # User configuration
 
@@ -41,13 +41,16 @@ fi
 # Set fzf key bindings and fuzzy completion (disabled)
 # source <(fzf --zsh)
 
-# import Zoxide
-eval "$(zoxide init zsh)"
-
-# reload tmux
-# tmux source-file ~/.config/tmux/tmux.conf
 
 # import aliases
 if [ -f ~/.aliases ]; then
 	source ~/.aliases
 fi
+
+# zoxide (keep this at the very end so hooks and completions are not overridden)
+# Ensure the completion system is initialized so compdef is available
+if ! typeset -f compdef >/dev/null; then
+  autoload -Uz compinit && compinit -i
+fi
+# Initialize zoxide (provides `z` and `zi`, plus completions)
+eval "$(zoxide init zsh)"

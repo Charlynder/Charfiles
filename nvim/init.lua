@@ -1,21 +1,25 @@
--- load line numbers as true
-vim.wo.number = true
-
-vim.api.nvim_create_user_command('E', 'Explore', {})
-vim.api.nvim_create_user_command('Tree', 'Vexplore', {})
-
-vim.keymap.set('n', '<leader>e', ':Explore<CR>')
-vim.keymap.set('n', '<leader>v', ':Vexplore<CR>')
-
--- plugins
--- pckr.vim setup
--- Make sure to setup `mapleader` and `maplocalleader` before
--- loading plugins so that mappings are correct.
+-- set leader keys before anything else
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
--- load pckr configuration
-require('pckr-config')
+-- load vim options for defaults
+require('options')
+
+-- plugins
+-- lazy.nvim setup
+
+-- bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable",
+        lazypath })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- setup plugins via lazy.nvim
+require('lazy').setup('plugins', {
+    change_detection = { enabled = true, notify = false },
+})
 
 -- load treesitter configuration
 require('treesitter-config')
@@ -26,10 +30,5 @@ if cmp_ok then
     require('completion-config')
 end
 
--- load StatusLine to green (#4CC970)
-vim.cmd([[
-  highlight StatusLine guifg=#4CC970 guibg=#4CC970 ctermfg=white ctermbg=green
-  highlight StatusLineNC guifg=#888888 guibg=#3ba05a ctermfg=gray ctermbg=darkgreen
-]])
 vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
 vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
