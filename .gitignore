@@ -1,0 +1,5 @@
+# editors
+.DS_Store 
+
+# ignore tmux submodules
+tmux/plugins/
