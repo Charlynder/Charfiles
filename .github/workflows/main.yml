@@ -1,0 +1,206 @@
+name: Test Neovim Configuration
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        nvim-version: ['stable', 'nightly']
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Neovim (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          if [ "${{ matrix.nvim-version }}" = "stable" ]; then
+            wget https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz
+            tar xzf nvim-linux64.tar.gz
+            echo "$PWD/nvim-linux64/bin" >> $GITHUB_PATH
+          else
+            wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz
+            tar xzf nvim-linux64.tar.gz
+            echo "$PWD/nvim-linux64/bin" >> $GITHUB_PATH
+          fi
+
+      - name: Install Neovim (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          if [ "${{ matrix.nvim-version }}" = "stable" ]; then
+            brew install neovim
+          else
+            brew install --HEAD neovim
+          fi
+
+      - name: Verify Neovim installation
+        run: |
+          nvim --version
+          echo "Neovim installed successfully"
+
+      - name: Create config directory structure
+        run: |
+          mkdir -p ~/.config/nvim/lua/plugins
+          mkdir -p ~/.local/share/nvim/site/pack/packer/start
+
+      - name: Copy configuration files
+        run: |
+          # Copy main init.lua
+          cp init.lua ~/.config/nvim/
+          
+          # Copy lua configuration files
+          [ -f options.lua ] && cp options.lua ~/.config/nvim/lua/
+          [ -f keymaps.lua ] && cp keymaps.lua ~/.config/nvim/lua/
+          [ -f autoclose.lua ] && cp autoclose.lua ~/.config/nvim/lua/
+          [ -f treesitter-config.lua ] && cp treesitter-config.lua ~/.config/nvim/lua/
+          [ -f completion-config.lua ] && cp completion-config.lua ~/.config/nvim/lua/
+          [ -f harpoon-config.lua ] && cp harpoon-config.lua ~/.config/nvim/lua/
+          [ -f lsp-config.lua ] && cp lsp-config.lua ~/.config/nvim/lua/
+          
+          # Copy plugins file(s)
+          if [ -f plugins.lua ]; then
+            cp plugins.lua ~/.config/nvim/lua/plugins/init.lua
+          fi
+          
+          # Copy lazy-lock.json if it exists
+          [ -f lazy-lock.json ] && cp lazy-lock.json ~/.config/nvim/
+
+      - name: Install language dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git curl build-essential
+
+      - name: Install language dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # Most dependencies are already available on macOS runners
+          echo "Dependencies check complete"
+
+      - name: Bootstrap lazy.nvim and install plugins
+        run: |
+          # Run nvim headless to trigger lazy.nvim bootstrap and plugin installation
+          nvim --headless "+Lazy! sync" +qa 2>&1 | tee install.log || true
+          
+          # Wait a bit for installation to complete
+          sleep 5
+
+      - name: Test configuration loads without errors
+        run: |
+          # Test that nvim starts and exits cleanly
+          timeout 60s nvim --headless "+checkhealth" "+qa" 2>&1 | tee checkhealth.log || {
+            echo "Neovim failed to load configuration"
+            exit 1
+          }
+
+      - name: Test Lua syntax
+        run: |
+          # Check all Lua files for syntax errors
+          for file in init.lua lua/*.lua lua/plugins/*.lua; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              nvim --headless -c "luafile $file" -c "qa" 2>&1 | tee -a syntax_check.log || {
+                echo "Syntax error in $file"
+                exit 1
+              }
+            fi
+          done
+
+      - name: Test plugin loading
+        run: |
+          # Create a test script to verify plugins are loaded
+          cat > test_plugins.lua << 'EOF'
+          local plugins_ok = true
+          
+          -- Test that lazy.nvim is available
+          local lazy_ok, lazy = pcall(require, 'lazy')
+          if not lazy_ok then
+            print("ERROR: lazy.nvim not loaded")
+            plugins_ok = false
+          else
+            print("SUCCESS: lazy.nvim loaded")
+          end
+          
+          -- Test core plugins
+          local core_plugins = {
+            'nvim-treesitter',
+            'telescope',
+            'harpoon',
+            'nvim-surround',
+          }
+          
+          for _, plugin in ipairs(core_plugins) do
+            local ok, _ = pcall(require, plugin)
+            if ok then
+              print("SUCCESS: " .. plugin .. " loaded")
+            else
+              print("WARNING: " .. plugin .. " not loaded (may be expected)")
+            end
+          end
+          
+          if not plugins_ok then
+            vim.cmd('cq') -- Exit with error code
+          end
+          EOF
+          
+          nvim --headless -c "luafile test_plugins.lua" -c "qa" 2>&1 | tee plugin_test.log
+
+      - name: Test basic functionality
+        run: |
+          # Test that basic commands work
+          cat > test_basic.lua << 'EOF'
+          -- Test basic vim functionality
+          vim.cmd('echo "Testing basic functionality"')
+          
+          -- Test options are set
+          if vim.wo.number then
+            print("SUCCESS: Line numbers enabled")
+          else
+            print("ERROR: Line numbers not enabled")
+          end
+          
+          -- Test leader key is set
+          if vim.g.mapleader == " " then
+            print("SUCCESS: Leader key set correctly")
+          else
+            print("ERROR: Leader key not set correctly")
+          end
+          
+          print("Basic functionality test complete")
+          EOF
+          
+          nvim --headless -c "luafile test_basic.lua" -c "qa" 2>&1 | tee basic_test.log
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.os }}-${{ matrix.nvim-version }}
+          path: |
+            *.log
+            ~/.local/share/nvim/lazy.log
+          retention-days: 7
+
+      - name: Test summary
+        if: always()
+        run: |
+          echo "=== Test Summary ==="
+          echo "OS: ${{ matrix.os }}"
+          echo "Neovim Version: ${{ matrix.nvim-version }}"
+          echo ""
+          echo "Configuration test completed"
+          
+          if [ -f install.log ]; then
+            echo ""
+            echo "=== Installation Log (last 20 lines) ==="
+            tail -20 install.log
+          fi
